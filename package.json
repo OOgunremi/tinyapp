@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/OOgunremi/tinyapp/issues"
   },
-  "homepage": "https://github.com/OOgunremi/tinyapp#readme"
+  "homepage": "https://github.com/OOgunremi/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
 }
