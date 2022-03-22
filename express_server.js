@@ -2,6 +2,7 @@ const express = require('express');
 const res = require('express/lib/response');
 const app  = express();
 const port = 1982;
+app.set('view engine', 'ejs');
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
