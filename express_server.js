@@ -20,6 +20,9 @@ app.get('/hello', (req, res) => {
 app.get('/urls', (req, res) => {
   res.render('urls_index', {urls: urlDatabase});
 });
+app.get('/urls/:shortURL', (req, res) => {
+  res.render('urls_show', { shortURL: req.params.shortURL, longURL: req.params.longURL });
+});
 app.listen(port, () => {
   console.log(`App listening on port ${port}!`);
 });
