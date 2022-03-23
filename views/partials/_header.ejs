@@ -4,20 +4,28 @@
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
-    <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+    <div class="collapse navbar-collapse" id="navbarNavAltMarkup"> 
       <div class="navbar-nav">
         <a class="nav-item nav-link" href="/urls">My URLs</a>
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
-    <form method="POST" action="/login">
-      <div class="form-group mb-2">
-        <label for="Username">Username:</label>
-        <input class="form-control" type="text" name="Username" placeholder="Username" style="width: 500px">
-        <label for="password">Password:</label>
-        <input class="form-control" type="password" name="password" placeholder="Password" style="width: 500px">
-      </div>
-        <button type="submit" class="btn btn-primary">Sign in</button>
-    </form>
+    <% if (username) {%>
+      <div> <%= username %> is currently logged in </div>
+      <form method="POST" action="/logout">
+        <button type="submit" class="btn btn-primary">Sign out</button>
+      </form>
+      <% } else { %>
+        <form method="POST" action="/login">
+          <div class="form-group mb-2">
+            <label for="Username">Username:</label>
+            <input class="form-control" type="text" name="username" placeholder="username" style="width: 500px">
+            <label for="password">Password:</label>
+            <input class="form-control" type="password" name="password" placeholder="Password" style="width: 500px">
+          </div>
+            <button type="submit" class="btn btn-primary">Sign in</button>
+        </form>
+        <% } %>
+    
   </nav>
 </header>

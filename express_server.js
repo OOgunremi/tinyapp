@@ -17,17 +17,16 @@ function generateRandomString(noOfChars) {
   }
   return output;
 }
-
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 app.get('/', (req, res) => {
-  res.send('Hello Folks!');
+  res.send('Hello');
 });
 app.get('/urls', (req, res) => {
   //console.log('req.cookies =',req.cookies);
-  res.render('urls_index', {urls: urlDatabase});
+  res.render('urls_index', {urls: urlDatabase,  username: req.cookies["username"]});
   //res.redirect('/urls/:shortURL');
 });
 app.get("/urls/new", (req, res) => {
@@ -66,12 +65,16 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/`);
+  res.redirect(`/urls`);
 });
 app.post("/login", (req, res) => {
-  console.log('body = ',req.body);
-  console.log(res.cookie);
-  res.cookie('username', req.body.Username);
+  //console.log('body = ',req.body);
+  //console.log(res.cookie);
+  res.cookie('username', req.body.username);
+  res.redirect(`/urls/`);
+});
+app.post("/logout", (req, res) => {
+  res.clearCookie('username');
   res.redirect(`/urls/`);
 });
 app.listen(port, () => {
