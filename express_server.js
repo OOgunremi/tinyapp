@@ -5,6 +5,9 @@ const app  = express();
 const port = 8080;
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
+const cookieParser = require('cookie-parser');
+app.use(cookieParser());
+
 app.set('view engine', 'ejs');
 function generateRandomString(noOfChars) {
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -62,6 +65,11 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   const shortURL = req.params.shortURL;
   const longURL = req.body.longURL;
   urlDatabase[shortURL] = longURL;
+  res.redirect(`/urls/`);
+});
+app.post("/login", (req, res) => {
+  console.log()
+  
   res.redirect(`/urls/`);
 });
 app.listen(port, () => {

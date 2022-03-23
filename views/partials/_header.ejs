@@ -10,5 +10,14 @@
         <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
       </div>
     </div>
+    <form method="POST" action="/login">
+      <div class="form-group mb-2">
+        <label for="Username">Username:</label>
+        <input class="form-control" type="text" name="Username" placeholder="Username" style="width: 500px">
+        <label for="password">Password:</label>
+        <input class="form-control" type="password" name="password" placeholder="Password" style="width: 500px">
+      </div>
+        <button type="submit" class="btn btn-primary">Sign in</button>
+    </form>
   </nav>
 </header>
