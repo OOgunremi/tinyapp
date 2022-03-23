@@ -26,6 +26,7 @@ app.get('/', (req, res) => {
   res.send('Hello Folks!');
 });
 app.get('/urls', (req, res) => {
+  //console.log('req.cookies =',req.cookies);
   res.render('urls_index', {urls: urlDatabase});
   //res.redirect('/urls/:shortURL');
 });
@@ -68,8 +69,9 @@ app.post("/urls/:shortURL/edit", (req, res) => {
   res.redirect(`/urls/`);
 });
 app.post("/login", (req, res) => {
-  console.log()
-  
+  console.log('body = ',req.body);
+  console.log(res.cookie);
+  res.cookie('username', req.body.Username);
   res.redirect(`/urls/`);
 });
 app.listen(port, () => {
