@@ -90,15 +90,29 @@ app.post("/urls/:shortURL/edit", (req, res) => {
 });
 app.get("/login", (req, res) => {
   const templateVars = {user: null};
-  res.render("urls_register", templateVars);
+  res.render("urls_login", templateVars);
 });
 app.post("/login", (req, res) => {
-  res.cookie('username', req.body.username);
-  res.redirect(`/urls/`);
+  const email = req.body.email;
+  const password = req.body.password;
+  if (email === '' || password === '') {
+    res.send('Please register/login');
+    return;
+  }
+  const user = emailLookUp(email);
+  if (!user) {
+    res.send('Please check password');
+  }
+
+  if (password === user.password) {
+    res.cookie('user_id', user.id);
+    res.redirect(`/urls`);
+  }
+
 });
 app.post("/logout", (req, res) => {
   res.clearCookie('user_id');
-  res.redirect(`/urls/`);
+  res.redirect(`/urls`);
 });
 app.get("/register", (req, res) => {
   const templateVars = {user: null};
