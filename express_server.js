@@ -77,6 +77,14 @@ app.post("/logout", (req, res) => {
   res.clearCookie('username');
   res.redirect(`/urls/`);
 });
+app.get("/register", (req, res) => {
+  //console.log(res.statuscode);
+  //response.writeHead()
+  const templateVars = {username: null};
+  res.render("urls_register", templateVars);
+  //const email = req.body.email;
+  //const password = req.body.password;
+});
 app.listen(port, () => {
   console.log(`App listening on port ${port}!`);
 });
