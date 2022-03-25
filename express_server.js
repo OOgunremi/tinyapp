@@ -2,7 +2,9 @@
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const bodyParser = require("body-parser");
+const {getUserByEmail} = require("./helpers");
 const port = 8080;
+const bcrypt = require('bcryptjs');
 
 const app  = express();
 app.use(bodyParser.urlencoded({extended: true}));
@@ -28,12 +30,12 @@ const users = {
   "aJ48lW": {
     id: "aJ48lW",
     email: "OOgunremi@yahoo.com",
-    password: "123"
+    password: bcrypt.hashSync("123", 10)
   },
   "user2ID": {
     id: "user2ID",
     email: "b@c.com",
-    password: "124"
+    password: bcrypt.hashSync("124", 10)
   }
 };
 
@@ -47,14 +49,7 @@ const generateRandomString = (noOfChars) => {
   }
   return randomString;
 };
-const emailLookUp = (email) => {
-  for (let userid in users) {
-    if (users[userid].email === email) {
-      return users[userid];
-    }
-  }
-  return null;
-};
+
 const filterDatabase = (userID) => {
   const filteredByUserId = {};
   for (const shortUrl in urlDatabase) {
@@ -157,11 +152,11 @@ app.post("/login", (req, res) => {
     res.status(403).send('Please enter your email and password and retry');
     return;
   }
-  const user = emailLookUp(email);
+  const user = getUserByEmail(email, users);
   if (!user) {
     res.status(403).send('This email address is not in the database');
   } else {
-    if (password === user.password) {
+    if (bcrypt.compareSync(password, user.password)) {
       res.cookie('user_id', user.id);
       res.redirect(`/urls`);
     } else {
@@ -180,17 +175,18 @@ app.get("/register", (req, res) => {
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
+  const hashedPassword = bcrypt.hashSync(password, 10);
   if (email === '' || password === '') {
     res.status(400).send('Please register or login');
   }
-  if (emailLookUp(email)) {
+  if (getUserByEmail(email, users)) {
     res.status(400).send('Existing user. Please login');
   }
   const userId = generateRandomString(6);
   const user = {
     id: userId,
     email: req.body.email,
-    password: req.body.password
+    password: hashedPassword
   };
   users[userId] = user;
   res.cookie('user_id', userId);
