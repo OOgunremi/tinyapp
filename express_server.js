@@ -61,7 +61,6 @@ app.get("/", (req, res) => {
     res.redirect("/login");
   }
 });
-
 app.get('/urls', (req, res) => {
   const userId = req.session.user_id;
   if (userId === undefined) {

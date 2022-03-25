@@ -14,13 +14,14 @@
         <h5 class="card-title">TinyURL for: <%= longUrl %></h5>
         <p class="card-text">Short URL: <a href="/u/<%= shortUrl %>"><%= shortUrl %></a></p>
       </div>
-      <form class="form-inline" action="/urls/<%= shortUrl%>/edit" method="POST">
+      <h3>Edit</h3>
+      <form action="/urls/<%= shortUrl%>/edit" method="POST">
           <label for="newUrl">New URL:</label>
           <input type="text" name="longUrl" placeholder="http://" style="width: 300px; margin: 1em">
           <button type="submit" class="btn btn-primary">Submit</button>
       </form>
     <div class="card-footer text-muted"></div>
-    <h3>Edit</h3>
+  
   </div>
   <!-- Bootstrap JS -->
   <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
