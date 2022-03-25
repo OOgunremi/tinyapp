@@ -29,6 +29,7 @@
   "devDependencies": {
     "bcryptjs": "^2.4.3",
     "chai": "^4.3.6",
+    "cookie-session": "^2.0.0",
     "mocha": "^9.2.2"
   }
 }

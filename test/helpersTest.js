@@ -1,6 +1,6 @@
 const { assert, Assertion } = require('chai');
 
-const { getUserByEmail } = require('../helpers.js');
+const { getUserByEmail, generateRandomString } = require('../helpers.js');
 
 const testUsers = {
   "userRandomID": {
@@ -23,7 +23,19 @@ describe('getUserByEmail', function() {
   });
   it('should return null with an invalid email', function() {
     const user = getUserByEmail("userxyz@example.com", testUsers);
-    const ReturnedValue = null;
-    assert.equal(user.id, ReturnedValue);
+    assert.equal(user, null);
   });
+});
+
+describe('generateRandomString', function() {
+  it('should return 6 random strings when 6 is the argument', function() {
+    const noOfChars = (generateRandomString(6)).length;
+    assert.equal(noOfChars, 6);
+  });
+  it('should return random strings everytime', function() {
+    const noOfChars1 = (generateRandomString(6));
+    const noOfChars2 = (generateRandomString(6));
+    assert.notEqual(noOfChars1, noOfChars2);
+  });
+
 });
