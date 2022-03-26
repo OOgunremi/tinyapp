@@ -15,25 +15,12 @@ app.set('view engine', 'ejs');
 
 //DATABASE FOR TESTING
 const urlDatabase = {
-  b6UTxQ: {
-    longUrl: "https://www.tsn.ca",
-    userID: "aJ48lW"
-  },
-  i3BoGr: {
-    longUrl: "https://www.google.ca",
-    userID: "aJ48lW"
-  },
   i3BoGs: {
     longUrl: "https://www.google.ca",
     userID: "user2ID"
   }
 };
 const users = {
-  "aJ48lW": {
-    id: "aJ48lW",
-    email: "OOgunremi@yahoo.com",
-    password: bcrypt.hashSync("123", 10)
-  },
   "user2ID": {
     id: "user2ID",
     email: "b@c.com",
