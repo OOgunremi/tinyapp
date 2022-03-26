@@ -14,9 +14,9 @@ app.use(cookieSession({
   keys: ['LIGHTHOUSELABS']
 }));
 
-// DATABASE
-const urlDatabase = {}; //For storing the urls from the users
-const users = {}; //For storing users
+// DATABASE FOR URLS AND USERS STORAGE
+const urlDatabase = {};
+const users = {};
 
 // GET ROUTES
 app.get("/", (req, res) => {
@@ -41,13 +41,14 @@ app.get('/urls', (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const userId = req.session.user_id;
+  const userId = req.session.user_id; ``
   if (!userId) {
     res.redirect(`/login`);
+  } else {
+    const user = users[userId];
+    const templateVars = { user };
+    res.render("urls_new", templateVars);
   }
-  const user = users[userId];
-  const templateVars = {user};
-  res.render("urls_new", templateVars);
 });
 
 // Registration and Login Pages
@@ -61,28 +62,32 @@ app.get("/login", (req, res) => {
 });
 
 app.get('/urls/:shortUrl', (req, res) => {
-  //renders the details of the shortURL and its linked longURL
+  //renders the details of the shortURL and its linked longURL to authorized users
   const userId = req.session.user_id;
   if (!userId) {
     res.status(401).send('Please Register or Log in');
   } else {
     const user = users[userId];
+    const filteredDatabase = filterDatabase(userId, urlDatabase);
     const shortUrl = req.params.shortUrl;
-    const longUrl = urlDatabase[shortUrl].longUrl;
-    const templateVars = { user, shortUrl, longUrl };
-    res.render('urls_show', templateVars);
+    if (filteredDatabase[shortUrl]) {
+      const longUrl = urlDatabase[shortUrl].longUrl;
+      const templateVars = { user, shortUrl, longUrl };
+      res.render('urls_show', templateVars);
+    } else {
+      res.status(401).send('Access denied. Not authorized to view this page');
+    }
   }
 });
 app.get("/u/:shortUrl", (req, res) => {
   //renders the longURL page via the shortURL
-  console.log('shortUrl = ', req.params.shortUrl);
   const shortUrl = req.params.shortUrl;
-  console.log('longUrl = ', urlDatabase[shortUrl].longUrl);
   const longUrl = urlDatabase[shortUrl].longUrl;
   if (!longUrl) {
     res.status(404).send('Invalid URL. Please check your URL Input');
+  } else {
+    res.redirect(longUrl);
   }
-  res.redirect(longUrl);
 });
 
 //POST ROUTES
@@ -91,14 +96,18 @@ app.post("/urls", (req, res) => {
   const userId = req.session.user_id;
   if (!userId) {
     res.status(401).send("Please log in to create short URLs.");
+  } else {
+    const shortUrlNew = generateRandomString(6);
+    let longUrlNew = req.body.longUrl;
+    if (longUrlNew.substring(0, 6) !== 'http://') {
+      longUrlNew = 'http://' + longUrlNew;
+    }
+    urlDatabase[shortUrlNew] = {
+      longUrl: longUrlNew,
+      userID: userId
+    };
+    res.redirect(`/urls/${shortUrlNew}`);
   }
-  const shortUrlNew = generateRandomString(6);
-  const longUrlNew = req.body.longUrl;
-  urlDatabase[shortUrlNew] = {
-    longUrl: longUrlNew,
-    userID: userId
-  };
-  res.redirect(`/urls/${shortUrlNew}`);
 });
 
 app.post("/urls/:shortUrl/delete", (req, res) => {
@@ -127,7 +136,6 @@ app.post("/urls/:shortUrl/edit", (req, res) => {
   }
 });
 
-
 app.post("/register", (req, res) => {
   //for new user registration into database
   const email = req.body.email;
@@ -135,20 +143,20 @@ app.post("/register", (req, res) => {
   const hashedPassword = bcrypt.hashSync(password, 10);
   if (!email || !password) {
     res.status(400).send('Please register or login');
-  }
-  if (getUserByEmail(email, users)) {
+  } else if (getUserByEmail(email, users)) {
     res.status(400).send('Existing user. Please login');
+  } else {
+    // Storing users into database
+    const userId = generateRandomString(6);
+    const user = {
+      id: userId,
+      email: req.body.email,
+      password: hashedPassword
+    };
+    users[userId] = user;
+    req.session.user_id = userId;
+    res.redirect(`/urls/`);
   }
-  // Storing users into database
-  const userId = generateRandomString(6);
-  const user = {
-    id: userId,
-    email: req.body.email,
-    password: hashedPassword
-  };
-  users[userId] = user;
-  req.session.user_id = userId;
-  res.redirect(`/urls/`);
 });
 
 app.post("/login", (req, res) => {
