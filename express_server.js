@@ -1,4 +1,4 @@
-//UTILITIES
+// UTILITIES
 const express = require('express');
 const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
@@ -6,27 +6,17 @@ const {getUserByEmail, generateRandomString, filterDatabase} = require("./helper
 const port = 8080;
 const bcrypt = require('bcryptjs');
 const app  = express();
+
+app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
   keys: ['LIGHTHOUSELABS']
 }));
-app.set('view engine', 'ejs');
 
-//DATABASE FOR TESTING
-const urlDatabase = {
-  i3BoGs: {
-    longUrl: "https://www.google.ca",
-    userID: "user2ID"
-  }
-};
-const users = {
-  "user2ID": {
-    id: "user2ID",
-    email: "b@c.com",
-    password: bcrypt.hashSync("124", 10)
-  }
-};
+// DATABASE
+const urlDatabase = {}; //For storing the urls from the users
+const users = {}; //For storing users
 
 // GET ROUTES
 app.get("/", (req, res) => {
@@ -60,7 +50,7 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
-//GET ROUTES FOR REGISTRATION AND LOGIN
+// Registration and Login Pages
 app.get("/register", (req, res) => {
   const templateVars = {user: null};
   res.render("urls_register", templateVars);
@@ -70,9 +60,8 @@ app.get("/login", (req, res) => {
   res.render("urls_login", templateVars);
 });
 
-
-//GET ROUTES FOR SHORT URL
 app.get('/urls/:shortUrl', (req, res) => {
+  //renders the details of the shortURL and its linked longURL
   const userId = req.session.user_id;
   if (!userId) {
     res.status(401).send('Please Register or Log in');
@@ -85,6 +74,7 @@ app.get('/urls/:shortUrl', (req, res) => {
   }
 });
 app.get("/u/:shortUrl", (req, res) => {
+  //renders the longURL page via the shortURL
   console.log('shortUrl = ', req.params.shortUrl);
   const shortUrl = req.params.shortUrl;
   console.log('longUrl = ', urlDatabase[shortUrl].longUrl);
@@ -95,9 +85,9 @@ app.get("/u/:shortUrl", (req, res) => {
   res.redirect(longUrl);
 });
 
-
 //POST ROUTES
 app.post("/urls", (req, res) => {
+  //updates database with new URLs
   const userId = req.session.user_id;
   if (!userId) {
     res.status(401).send("Please log in to create short URLs.");
@@ -111,9 +101,8 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortUrlNew}`);
 });
 
-
-//POST ROUTES FOR SHORT URL DELETE AND EDIT
 app.post("/urls/:shortUrl/delete", (req, res) => {
+  //deletes URLs from database
   const userId = req.session.user_id;
   const shortUrl = req.params.shortUrl;
   if (Object.keys(filterDatabase(userId, urlDatabase)).includes(shortUrl)) {
@@ -125,6 +114,7 @@ app.post("/urls/:shortUrl/delete", (req, res) => {
 });
 
 app.post("/urls/:shortUrl/edit", (req, res) => {
+  //for editing existing URLs
   const userId = req.session.user_id;
   const shortUrl = req.params.shortUrl;
   const longUrl = req.body.longUrl;
@@ -138,8 +128,8 @@ app.post("/urls/:shortUrl/edit", (req, res) => {
 });
 
 
-//POST ROUTES FOR REGISTRATION AND LOGIN
 app.post("/register", (req, res) => {
+  //for new user registration into database
   const email = req.body.email;
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
@@ -149,6 +139,7 @@ app.post("/register", (req, res) => {
   if (getUserByEmail(email, users)) {
     res.status(400).send('Existing user. Please login');
   }
+  // Storing users into database
   const userId = generateRandomString(6);
   const user = {
     id: userId,
@@ -161,6 +152,7 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/login", (req, res) => {
+  //Existing users login
   const email = req.body.email;
   const password = req.body.password;
   if (!email || !password) {
@@ -180,13 +172,10 @@ app.post("/login", (req, res) => {
   }
 });
 
-
-//POST ROUTES FOR LOGOUT
 app.post("/logout", (req, res) => {
   req.session = null;
   res.redirect(`/login`);
 });
-
 
 //SERVER STATUS
 app.listen(port, () => {
