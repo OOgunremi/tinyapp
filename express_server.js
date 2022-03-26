@@ -2,7 +2,7 @@
 const express = require('express');
 const cookieSession = require('cookie-session');
 const bodyParser = require("body-parser");
-const {getUserByEmail, generateRandomString} = require("./helpers");
+const {getUserByEmail, generateRandomString, filterDatabase} = require("./helpers");
 const port = 8080;
 const bcrypt = require('bcryptjs');
 const app  = express();
@@ -28,41 +28,31 @@ const users = {
   }
 };
 
-//FUNCTIONS
-const filterDatabase = (userID) => {
-  const filteredByUserId = {};
-  for (const shortUrl in urlDatabase) {
-    if (urlDatabase[shortUrl].userID === userID) {
-      filteredByUserId[shortUrl] = urlDatabase[shortUrl];
-    }
-  }
-  return filteredByUserId;
-};
-
-//ROUTES
+// GET ROUTES
 app.get("/", (req, res) => {
   const userId = req.session.user_id;
-  if (userId === undefined) {
+  if (!userId) {
     res.redirect("/urls");
   } else {
     res.redirect("/login");
   }
 });
+
 app.get('/urls', (req, res) => {
   const userId = req.session.user_id;
-  if (userId === undefined) {
+  if (!userId) {
     res.send('Please Register or Log in');
   } else {
     const user = users[userId];
-    const urlDatabase = filterDatabase(userId);
-    const templateVars = { urls: urlDatabase, user };
+    const filteredDatabase = filterDatabase(userId, urlDatabase);
+    const templateVars = { urls: filteredDatabase, user };
     res.render('urls_index', templateVars);
   }
 });
 
 app.get("/urls/new", (req, res) => {
   const userId = req.session.user_id;
-  if (userId === undefined) {
+  if (!userId) {
     res.redirect(`/login`);
   }
   const user = users[userId];
@@ -70,9 +60,21 @@ app.get("/urls/new", (req, res) => {
   res.render("urls_new", templateVars);
 });
 
+//GET ROUTES FOR REGISTRATION AND LOGIN
+app.get("/register", (req, res) => {
+  const templateVars = {user: null};
+  res.render("urls_register", templateVars);
+});
+app.get("/login", (req, res) => {
+  const templateVars = {user: null};
+  res.render("urls_login", templateVars);
+});
+
+
+//GET ROUTES FOR SHORT URL
 app.get('/urls/:shortUrl', (req, res) => {
   const userId = req.session.user_id;
-  if (userId === undefined) {
+  if (!userId) {
     res.status(401).send('Please Register or Log in');
   } else {
     const user = users[userId];
@@ -83,18 +85,21 @@ app.get('/urls/:shortUrl', (req, res) => {
   }
 });
 app.get("/u/:shortUrl", (req, res) => {
+  console.log('shortUrl = ', req.params.shortUrl);
   const shortUrl = req.params.shortUrl;
+  console.log('longUrl = ', urlDatabase[shortUrl].longUrl);
   const longUrl = urlDatabase[shortUrl].longUrl;
-  console.log(urlDatabase[shortUrl].longUrl);
   if (!longUrl) {
     res.status(404).send('Invalid URL. Please check your URL Input');
   }
   res.redirect(longUrl);
 });
 
+
+//POST ROUTES
 app.post("/urls", (req, res) => {
   const userId = req.session.user_id;
-  if (userId === undefined) {
+  if (!userId) {
     res.status(401).send("Please log in to create short URLs.");
   }
   const shortUrlNew = generateRandomString(6);
@@ -105,10 +110,13 @@ app.post("/urls", (req, res) => {
   };
   res.redirect(`/urls/${shortUrlNew}`);
 });
+
+
+//POST ROUTES FOR SHORT URL DELETE AND EDIT
 app.post("/urls/:shortUrl/delete", (req, res) => {
   const userId = req.session.user_id;
   const shortUrl = req.params.shortUrl;
-  if (Object.keys(filterDatabase(userId)).includes(shortUrl)) {
+  if (Object.keys(filterDatabase(userId, urlDatabase)).includes(shortUrl)) {
     delete urlDatabase[shortUrl];
     res.redirect(`/urls`);
   } else {
@@ -120,56 +128,22 @@ app.post("/urls/:shortUrl/edit", (req, res) => {
   const userId = req.session.user_id;
   const shortUrl = req.params.shortUrl;
   const longUrl = req.body.longUrl;
-  const urlDatabase = filterDatabase(userId);
-  if (Object.keys(urlDatabase).includes(shortUrl)) {
+  const filteredDatabase = filterDatabase(userId, urlDatabase);
+  if (Object.keys(filteredDatabase).includes(shortUrl)) {
     urlDatabase[shortUrl].longUrl = longUrl;
     res.redirect(`/urls`);
   } else {
     res.status(401).send('operation denied. No authorization to edit');
-    return;
   }
 });
 
-app.get("/login", (req, res) => {
-  const templateVars = {user: null};
-  res.render("urls_login", templateVars);
-});
 
-app.post("/login", (req, res) => {
-  const email = req.body.email;
-  const password = req.body.password;
-  if (email === '' || password === '') {
-    res.status(403).send('Please enter your email and password and retry');
-    return;
-  }
-  const user = getUserByEmail(email, users);
-  if (!user) {
-    res.status(403).send('This email address is not in the database');
-  } else {
-    if (bcrypt.compareSync(password, user.password)) {
-      req.session.user_id;
-      req.session.user_id = user.id;
-      res.redirect(`/urls`);
-    } else {
-      res.status(403).send('Incorrect password. Please check your password and retry');
-    }
-  }
-});
-
-app.post("/logout", (req, res) => {
-  res.clearCookie('user_id');
-  res.redirect(`/login`);
-});
-app.get("/register", (req, res) => {
-  const templateVars = {user: null};
-  res.render("urls_register", templateVars);
-});
-
+//POST ROUTES FOR REGISTRATION AND LOGIN
 app.post("/register", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
   const hashedPassword = bcrypt.hashSync(password, 10);
-  if (email === '' || password === '') {
+  if (!email || !password) {
     res.status(400).send('Please register or login');
   }
   if (getUserByEmail(email, users)) {
@@ -185,6 +159,36 @@ app.post("/register", (req, res) => {
   req.session.user_id = userId;
   res.redirect(`/urls/`);
 });
+
+app.post("/login", (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  if (!email || !password) {
+    res.status(403).send('Please enter your email and password and retry');
+  }
+  const user = getUserByEmail(email, users);
+  if (!user) {
+    res.status(403).send('This email address is not in the database');
+  } else {
+    if (bcrypt.compareSync(password, user.password)) {
+      req.session.user_id;
+      req.session.user_id = user.id;
+      res.redirect(`/urls`);
+    } else {
+      res.status(403).send('Incorrect password. Please check your password and retry');
+    }
+  }
+});
+
+
+//POST ROUTES FOR LOGOUT
+app.post("/logout", (req, res) => {
+  req.session = null;
+  res.redirect(`/login`);
+});
+
+
+//SERVER STATUS
 app.listen(port, () => {
   console.log(`App listening on port ${port}!`);
 });

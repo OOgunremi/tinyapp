@@ -18,5 +18,15 @@ const generateRandomString = (noOfChars) => {
   }
   return randomString;
 };
+//Filters users database using userID
+const filterDatabase = (userID, database) => {
+  const filteredByUserId = {};
+  for (const shortUrl in database) {
+    if (database[shortUrl].userID === userID) {
+      filteredByUserId[shortUrl] = database[shortUrl];
+    }
+  }
+  return filteredByUserId;
+};
 
-module.exports = {getUserByEmail, generateRandomString};
+module.exports = {getUserByEmail, generateRandomString, filterDatabase};
