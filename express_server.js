@@ -22,8 +22,6 @@ const users = {};
 app.get("/", (req, res) => {
   const userId = req.session.user_id;
   if (!userId) {
-    res.redirect("/urls");
-  } else {
     res.redirect("/login");
   }
 });
